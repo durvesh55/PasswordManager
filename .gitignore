@@ -1,0 +1,14 @@
+# Ignore folders created by Python and PyInstaller
+__pycache__/
+build/
+dist/
+.vscode/
+
+# Ignore the compiled executable (Recruiters build it themselves)
+*.exe
+*.spec
+
+# CRITICAL: Ignore your secrets and database
+master.hash
+passwords.txt
+secret.key

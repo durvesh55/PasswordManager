@@ -1,0 +1,194 @@
+""" 
+***** 1 - Method one without any external file ***** 
+
+from cryptography.fernet import Fernet
+
+#generate and initialize the key
+key = Fernet.generate_key()
+cipher=Fernet(key)
+
+#encrypt the password
+password = "MySecurePassword123".encode()
+encrypted = cipher.encrypt(password)
+
+#decrypt the password
+decrypted = cipher.decrypt(encrypted)
+
+#output of result
+print(f"Encrypted password : {encrypted}")
+print(f"Decrypted password {decrypted.decode()}")
+
+"""
+
+"""
+------------------ 2 - Method two with external file to store the key --------------------------
+
+from cryptography.fernet import Fernet
+import os
+def generate_key():
+
+    key = Fernet.generate_key()
+    with open("secret.key", "wb") as key_file:
+        key_file.write(key)
+
+def load_key():
+
+    return open("secret.key", "rb").read()
+
+
+if not os.path.exists("secret.key"):
+    generate_key()
+    print("New key generated and saved to 'secret.key'")
+else:
+    print("key loaded from file")
+
+# 2. Load the existing key
+key = load_key()
+cipher=Fernet(key)
+
+# 3. Encrypt a password
+password = "MySecurePassword123".encode()
+encrypted = cipher.encrypt(password)
+print(f"Encrypted content: {encrypted}")
+
+# 4. Decrypt the password
+decrypted = cipher.decrypt(encrypted)
+print(f"Decrypted content: {decrypted.decode()}")
+
+""" 
+
+"""
+------------------ 3 - Method three with external file to store the key and passwords --------------------------
+from cryptography.fernet import Fernet
+import os
+
+# --- SETUP: KEY MANAGEMENT ---
+def load_key():
+    file = open("secret.key", "rb")
+    key = file.read()
+    file.close()
+    return key
+
+# Check if key exists, if not generate it
+if not os.path.exists("secret.key"):
+    key = Fernet.generate_key()
+    with open("secret.key", "wb") as key_file:
+        key_file.write(key)
+
+key = load_key()
+fernet = Fernet(key)
+
+# --- FUNCTION: ADD PASSWORD ---
+def add():
+    name = input('Account Name (e.g., Google): ')
+    pwd = input("Password: ")
+
+    # Encrypt the password
+    encrypted_pwd = fernet.encrypt(pwd.encode()).decode()
+
+    # Append to file in format: name|encrypted_password
+    with open('passwords.txt', 'a') as f:
+        f.write(name + "|" + encrypted_pwd + "\n")
+    
+    print(f"Success! Password for {name} added.\n")
+
+# --- FUNCTION: VIEW PASSWORDS ---
+def view():
+    if not os.path.exists('passwords.txt'):
+        print("No passwords saved yet.\n")
+        return
+
+    with open('passwords.txt', 'r') as f:
+        for line in f.readlines():
+            data = line.rstrip() # Remove the new line character
+            if "|" in data:
+                user, passw = data.split("|")
+                try:
+                    decrypted_pwd = fernet.decrypt(passw.encode()).decode()
+                    print(f"Account: {user} | Password: {decrypted_pwd}")
+                except:
+                    print(f"Error decrypting password for {user}")
+    print("\n")
+
+# --- MAIN LOOP ---
+while True:
+    mode = input("Would you like to add a new password or view existing ones (view, add), or quit (q)? ").lower()
+    
+    if mode == "q":
+        break
+    elif mode == "view":
+        view()
+    elif mode == "add":
+        add()
+    else:
+        print("Invalid mode.")
+
+"""
+"""
+------------------ 4 - Method four with external file to store the key and passwords and getpass to hide password input --------------------------
+from cryptography.fernet import Fernet
+import os
+import getpass
+
+# --- SETUP: KEY MANAGEMENT ---
+def load_key():
+    file = open("secret.key", "rb")
+    key = file.read()
+    file.close()
+    return key
+
+# Check if key exists, if not generate it
+if not os.path.exists("secret.key"):
+    key = Fernet.generate_key()
+    with open("secret.key", "wb") as key_file:
+        key_file.write(key)
+
+key = load_key()
+fernet = Fernet(key)
+
+# --- FUNCTION: ADD PASSWORD ---
+def add():
+    name = input('Account Name (e.g., Google): ')
+    
+    # OLD LINE: pwd = input("Password: ")
+    # NEW LINE:
+    pwd = getpass.getpass("Password (hidden): ") 
+
+    # The rest remains the same...
+    encrypted_pwd = fernet.encrypt(pwd.encode()).decode()
+    with open('passwords.txt', 'a') as f:
+        f.write(name + "|" + encrypted_pwd + "\n")
+    print(f"Success! Password for {name} added.\n")
+
+# --- FUNCTION: VIEW PASSWORDS ---
+def view():
+    if not os.path.exists('passwords.txt'):
+        print("No passwords saved yet.\n")
+        return
+
+    with open('passwords.txt', 'r') as f:
+        for line in f.readlines():
+            data = line.rstrip() # Remove the new line character
+            if "|" in data:
+                user, passw = data.split("|")
+                try:
+                    decrypted_pwd = fernet.decrypt(passw.encode()).decode()
+                    print(f"Account: {user} | Password: {decrypted_pwd}")
+                except:
+                    print(f"Error decrypting password for {user}")
+    print("\n")
+
+# --- MAIN LOOP ---
+while True:
+    mode = input("Would you like to add a new password or view existing ones (view, add), or quit (q)? ").lower()
+    
+    if mode == "q":
+        break
+    elif mode == "view":
+        view()
+    elif mode == "add":
+        add()
+    else:
+        print("Invalid mode.")
+
+"""
